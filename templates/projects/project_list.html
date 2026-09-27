@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - PMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #f4f6fb; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        .sidebar { position: fixed; top: 0; left: 0; width: 240px; height: 100vh; background: #ffffff; border-right: 1px solid #e8ecf0; display: flex; flex-direction: column; z-index: 100; box-shadow: 2px 0 8px rgba(0,0,0,0.04); }
+        .sidebar-brand { padding: 24px 20px 16px; border-bottom: 1px solid #f0f0f0; }
+        .sidebar-brand h4 { margin: 0; font-weight: 700; font-size: 1.2rem; color: #1a1a2e; }
+        .sidebar-brand span { color: #4f46e5; }
+        .sidebar-menu { padding: 16px 0; flex: 1; overflow-y: auto; }
+        .menu-label { font-size: 10px; font-weight: 700; color: #adb5bd; text-transform: uppercase; letter-spacing: 1px; padding: 8px 20px 4px; }
+        .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #6b7280; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; position: relative; }
+        .sidebar-link:hover, .sidebar-link.active { background: #f0efff; color: #4f46e5; }
+        .sidebar-link.active::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: #4f46e5; border-radius: 0 3px 3px 0; }
+        .sidebar-link i { width: 18px; text-align: center; }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid #f0f0f0; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: #4f46e5; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .user-details p { margin: 0; }
+        .user-details .name { font-size: 0.85rem; font-weight: 600; color: #1a1a2e; }
+        .user-details .role { font-size: 0.75rem; color: #adb5bd; }
+        .main-content { margin-left: 240px; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid #e8ecf0; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 99; }
+        .topbar h5 { margin: 0; font-weight: 700; color: #1a1a2e; }
+        .topbar p { margin: 0; font-size: 0.78rem; color: #adb5bd; }
+        .page-body { padding: 24px 28px; }
+        .btn-primary-custom { background: #4f46e5; color: white; border: none; padding: 9px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-primary-custom:hover { background: #4338ca; color: white; }
+        .project-card { background: white; border-radius: 14px; border: 1px solid #f0f0f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s; overflow: hidden; height: 100%; display: flex; flex-direction: column; }
+        .project-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.09); }
+        .project-card-header { padding: 18px 20px 14px; border-bottom: 1px solid #f8f9fa; }
+        .project-card-body { padding: 16px 20px; flex: 1; }
+        .project-card-footer { padding: 12px 20px; background: #fafafa; border-top: 1px solid #f0f0f0; display: flex; gap: 8px; }
+        .pms-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+        .badge-completed { background: #dcfce7; color: #16a34a; }
+        .badge-inprogress { background: #dbeafe; color: #2563eb; }
+        .badge-pending { background: #fef9c3; color: #ca8a04; }
+        .badge-onhold { background: #f3f4f6; color: #6b7280; }
+        .badge-high { background: #fee2e2; color: #dc2626; }
+        .badge-medium { background: #ffedd5; color: #ea580c; }
+        .badge-low { background: #dcfce7; color: #16a34a; }
+        .project-meta { display: flex; flex-direction: column; gap: 6px; }
+        .project-meta-item { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #6b7280; }
+        .project-meta-item i { width: 14px; color: #9ca3af; font-size: 0.8rem; }
+        .action-btn { padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+        .btn-view { background: #ede9fe; color: #7c3aed; }
+        .btn-view:hover { background: #ddd6fe; color: #7c3aed; }
+        .btn-edit { background: #fef9c3; color: #ca8a04; }
+        .btn-edit:hover { background: #fef08a; color: #ca8a04; }
+        .btn-del { background: #fee2e2; color: #dc2626; }
+        .btn-del:hover { background: #fecaca; color: #dc2626; }
+        .member-chip { background: #f3f4f6; color: #374151; padding: 2px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 500; }
+        .members-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+        .empty-state { text-align: center; padding: 80px 20px; }
+        .empty-state i { font-size: 3.5rem; color: #d1d5db; display: block; margin-bottom: 16px; }
+        .empty-state h5 { color: #6b7280; font-weight: 600; }
+        .empty-state p { color: #9ca3af; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4>PMS <span>●</span></h4>
+        <small style="color:#adb5bd;font-size:0.75rem;">Project Management System</small>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-label">Main Menu</div>
+        <a href="{% url 'dashboard' %}" class="sidebar-link"><i class="fas fa-th-large"></i> Dashboard</a>
+        <a href="{% url 'project_list' %}" class="sidebar-link active"><i class="fas fa-folder-open"></i> Projects</a>
+        <a href="{% url 'task_list' %}" class="sidebar-link"><i class="fas fa-check-square"></i> Tasks</a>
+        <a href="{% url 'team_list' %}" class="sidebar-link"><i class="fas fa-users"></i> Teams</a>
+        <a href="{% url 'chat_list' %}" class="sidebar-link"><i class="fas fa-comments"></i> Chat</a>
+        <div class="menu-label" style="margin-top:8px;">Management</div>
+        <a href="{% url 'file_list' %}" class="sidebar-link"><i class="fas fa-file-alt"></i> Files</a>
+        <a href="{% url 'reports' %}" class="sidebar-link"><i class="fas fa-chart-bar"></i> Reports</a>
+        <a href="{% url 'notification_list' %}" class="sidebar-link"><i class="fas fa-bell"></i> Notifications</a>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ user.username|first|upper }}</div>
+            <div class="user-details">
+                <p class="name">{{ user.username }}</p>
+                <p class="role">{{ user.role|title }}</p>
+            </div>
+            <a href="{% url 'logout' %}" style="margin-left:auto;color:#adb5bd;" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div>
+            <h5>📂 Projects</h5>
+            <p>Manage and track all your projects</p>
+        </div>
+        {% if request.user.role in 'super_admin,project_manager' %}
+            <a href="{% url 'project_create' %}" class="btn-primary-custom">
+                <i class="fas fa-plus"></i> New Project
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="page-body">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if projects %}
+        <div class="row g-3">
+            {% for project in projects %}
+            <div class="col-md-6 col-lg-4">
+                <div class="project-card">
+                    <div class="project-card-header">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 style="margin:0;font-weight:700;color:#1a1a2e;font-size:0.95rem;flex:1;margin-right:8px;">{{ project.name }}</h6>
+                            <span class="pms-badge {% if project.priority == 'high' %}badge-high{% elif project.priority == 'medium' %}badge-medium{% else %}badge-low{% endif %}">
+                                {{ project.get_priority_display }}
+                            </span>
+                        </div>
+                        <span class="pms-badge {% if project.status == 'completed' %}badge-completed{% elif project.status == 'in_progress' %}badge-inprogress{% elif project.status == 'on_hold' %}badge-onhold{% else %}badge-pending{% endif %}">
+                            {{ project.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="project-card-body">
+                        <p style="font-size:0.82rem;color:#6b7280;margin-bottom:12px;">{{ project.description|truncatewords:18 }}</p>
+                        <div class="project-meta">
+                            <div class="project-meta-item"><i class="fas fa-calendar-alt"></i><span>{{ project.start_date }} → {{ project.end_date }}</span></div>
+                            <div class="project-meta-item"><i class="fas fa-dollar-sign"></i><span>Budget: ${{ project.budget }}</span></div>
+                            <div class="project-meta-item"><i class="fas fa-user"></i><span>{{ project.created_by.username }}</span></div>
+                        </div>
+                        {% if project.members.all %}
+                        <div class="members-row">
+                            {% for member in project.members.all|slice:":4" %}
+                                <span class="member-chip">{{ member.username }}</span>
+                            {% endfor %}
+                            {% if project.members.count > 4 %}
+                                <span class="member-chip">+{{ project.members.count|add:"-4" }} more</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="project-card-footer">
+                        <a href="{% url 'project_detail' project.pk %}" class="action-btn btn-view"><i class="fas fa-eye me-1"></i>View</a>
+                        {% if request.user.role in 'super_admin,project_manager' %}
+                            <a href="{% url 'project_edit' project.pk %}" class="action-btn btn-edit"><i class="fas fa-pen me-1"></i>Edit</a>
+                            <a href="{% url 'project_delete' project.pk %}" class="action-btn btn-del"><i class="fas fa-trash me-1"></i>Delete</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-folder-open"></i>
+            <h5>No Projects Yet</h5>
+            <p>Get started by creating your first project.</p>
+            {% if request.user.role in 'super_admin,project_manager' %}
+                <a href="{% url 'project_create' %}" class="btn-primary-custom mt-3"><i class="fas fa-plus"></i> Create Project</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

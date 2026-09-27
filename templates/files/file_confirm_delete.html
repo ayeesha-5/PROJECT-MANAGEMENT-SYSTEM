@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete File - PMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #f4f6fb; font-family: "Segoe UI", sans-serif; margin: 0; }
+        .sidebar { position:fixed;top:0;left:0;width:240px;height:100vh;background:#fff;border-right:1px solid #e8ecf0;display:flex;flex-direction:column;z-index:100;box-shadow:2px 0 8px rgba(0,0,0,0.04); }
+        .sidebar-brand { padding:24px 20px 16px;border-bottom:1px solid #f0f0f0; }
+        .sidebar-brand h4 { margin:0;font-weight:700;font-size:1.2rem;color:#1a1a2e; }
+        .sidebar-brand span { color:#4f46e5; }
+        .sidebar-menu { padding:16px 0;flex:1;overflow-y:auto; }
+        .menu-label { font-size:10px;font-weight:700;color:#adb5bd;text-transform:uppercase;letter-spacing:1px;padding:8px 20px 4px; }
+        .sidebar-link { display:flex;align-items:center;gap:12px;padding:10px 20px;color:#6b7280;text-decoration:none;font-size:0.9rem;font-weight:500;transition:all 0.2s;position:relative; }
+        .sidebar-link:hover,.sidebar-link.active { background:#f0efff;color:#4f46e5; }
+        .sidebar-link.active::before { content:'';position:absolute;left:0;top:0;width:3px;height:100%;background:#4f46e5;border-radius:0 3px 3px 0; }
+        .sidebar-link i { width:18px;text-align:center;font-size:0.95rem; }
+        .badge-count { margin-left:auto;background:#ef4444;color:white;font-size:10px;padding:2px 6px;border-radius:10px;font-weight:600; }
+        .sidebar-footer { padding:16px 20px;border-top:1px solid #f0f0f0; }
+        .user-info { display:flex;align-items:center;gap:10px; }
+        .user-avatar { width:36px;height:36px;border-radius:50%;background:#4f46e5;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0; }
+        .user-details p { margin:0; }
+        .user-details .name { font-size:0.85rem;font-weight:600;color:#1a1a2e; }
+        .user-details .role { font-size:0.75rem;color:#adb5bd; }
+        .main-content { margin-left:240px;min-height:100vh; }
+        .topbar { background:#fff;border-bottom:1px solid #e8ecf0;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99; }
+        .topbar-title h5 { margin:0;font-weight:700;color:#1a1a2e;font-size:1.1rem; }
+        .topbar-title p { margin:0;font-size:0.78rem;color:#adb5bd; }
+        .topbar-actions { display:flex;align-items:center;gap:12px; }
+        .btn-icon { width:36px;height:36px;border-radius:50%;border:1px solid #e8ecf0;background:white;display:flex;align-items:center;justify-content:center;color:#6b7280;text-decoration:none;font-size:0.9rem;transition:all 0.2s; }
+        .btn-icon:hover { background:#f0efff;color:#4f46e5;border-color:#c7d2fe; }
+        .page-body { padding:24px 28px;display:flex;justify-content:center;align-items:flex-start;padding-top:60px; }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4>PMS <span>●</span></h4>
+        <small style="color:#adb5bd;font-size:0.75rem;">Project Management System</small>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-label">Main Menu</div>
+        <a href="{% url 'dashboard' %}" class="sidebar-link"><i class="fas fa-th-large"></i> Dashboard</a>
+        <a href="{% url 'project_list' %}" class="sidebar-link"><i class="fas fa-folder-open"></i> Projects</a>
+        <a href="{% url 'task_list' %}" class="sidebar-link"><i class="fas fa-check-square"></i> Tasks</a>
+        <a href="{% url 'team_list' %}" class="sidebar-link"><i class="fas fa-users"></i> Teams</a>
+        <a href="{% url 'chat_list' %}" class="sidebar-link"><i class="fas fa-comments"></i> Chat</a>
+        <div class="menu-label" style="margin-top:8px;">Management</div>
+        <a href="{% url 'file_list' %}" class="sidebar-link active"><i class="fas fa-file-alt"></i> Files</a>
+        <a href="{% url 'reports' %}" class="sidebar-link"><i class="fas fa-chart-bar"></i> Reports</a>
+        <a href="{% url 'notification_list' %}" class="sidebar-link">
+            <i class="fas fa-bell"></i> Notifications
+            {% if unread_notifications > 0 %}<span class="badge-count">{{ unread_notifications }}</span>{% endif %}
+        </a>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ user.username|first|upper }}</div>
+            <div class="user-details">
+                <p class="name">{{ user.username }}</p>
+                <p class="role">{{ user.role|title }}</p>
+            </div>
+            <a href="{% url 'logout' %}" style="margin-left:auto;color:#adb5bd;" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">
+            <h5>Delete File</h5>
+            <p>This action cannot be undone</p>
+        </div>
+        <div class="topbar-actions">
+            <a href="{% url 'notification_list' %}" class="btn-icon"><i class="fas fa-bell"></i></a>
+            <a href="{% url 'profile' %}" class="btn-icon"><i class="fas fa-user"></i></a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div style="width:100%;max-width:480px;">
+            <div style="background:white;border-radius:16px;border:1px solid #f0f0f0;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;">
+
+                <!-- Icon header -->
+                <div style="background:linear-gradient(135deg,#fee2e2,#fecaca);padding:32px;text-align:center;">
+                    <div style="width:72px;height:72px;border-radius:50%;background:white;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(220,38,38,0.2);">
+                        <i class="fas fa-trash-alt" style="font-size:1.8rem;color:#dc2626;"></i>
+                    </div>
+                    <h5 style="margin:0;font-weight:700;color:#991b1b;font-size:1.1rem;">Delete File</h5>
+                    <p style="margin:6px 0 0;font-size:0.82rem;color:#b91c1c;">This action is permanent and cannot be reversed</p>
+                </div>
+
+                <!-- Content -->
+                <div style="padding:28px;">
+                    <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:14px 16px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
+                        <i class="fas fa-exclamation-triangle" style="color:#ca8a04;margin-top:2px;flex-shrink:0;"></i>
+                        <div>
+                            <p style="margin:0;font-size:0.84rem;font-weight:600;color:#92400e;">Are you sure?</p>
+                            <p style="margin:4px 0 0;font-size:0.8rem;color:#b45309;">
+                                You are about to permanently delete
+                                <strong>"{{ file.title }}"</strong>.
+                                This file will be removed from the system.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- File info -->
+                    <div style="background:#f8f9ff;border-radius:10px;padding:14px 16px;margin-bottom:24px;border:1px solid #e8ecf0;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:40px;height:40px;border-radius:10px;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;">
+                                <i class="fas fa-file"></i>
+                            </div>
+                            <div>
+                                <p style="margin:0;font-weight:600;color:#1a1a2e;font-size:0.9rem;">{{ file.title }}</p>
+                                <p style="margin:2px 0 0;font-size:0.76rem;color:#9ca3af;">
+                                    Uploaded by {{ file.uploaded_by.username }} · {{ file.uploaded_at|date:"d M Y" }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST" style="display:flex;gap:12px;">
+                        {% csrf_token %}
+                        <a href="{% url 'file_list' %}" style="flex:1;background:#f3f4f6;color:#374151;border:none;border-radius:10px;padding:12px;font-size:0.88rem;font-weight:600;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.2s;">
+                            <i class="fas fa-arrow-left"></i> Keep File
+                        </a>
+                        <button type="submit" style="flex:1;background:#dc2626;color:white;border:none;border-radius:10px;padding:12px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;">
+                            <i class="fas fa-trash-alt"></i> Yes, Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

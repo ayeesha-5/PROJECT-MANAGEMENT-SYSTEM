@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload File - PMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #f4f6fb; font-family: "Segoe UI", sans-serif; margin: 0; }
+        .sidebar { position:fixed;top:0;left:0;width:240px;height:100vh;background:#fff;border-right:1px solid #e8ecf0;display:flex;flex-direction:column;z-index:100;box-shadow:2px 0 8px rgba(0,0,0,0.04); }
+        .sidebar-brand { padding:24px 20px 16px;border-bottom:1px solid #f0f0f0; }
+        .sidebar-brand h4 { margin:0;font-weight:700;font-size:1.2rem;color:#1a1a2e; }
+        .sidebar-brand span { color:#4f46e5; }
+        .sidebar-menu { padding:16px 0;flex:1;overflow-y:auto; }
+        .menu-label { font-size:10px;font-weight:700;color:#adb5bd;text-transform:uppercase;letter-spacing:1px;padding:8px 20px 4px; }
+        .sidebar-link { display:flex;align-items:center;gap:12px;padding:10px 20px;color:#6b7280;text-decoration:none;font-size:0.9rem;font-weight:500;transition:all 0.2s;position:relative; }
+        .sidebar-link:hover,.sidebar-link.active { background:#f0efff;color:#4f46e5; }
+        .sidebar-link.active::before { content:'';position:absolute;left:0;top:0;width:3px;height:100%;background:#4f46e5;border-radius:0 3px 3px 0; }
+        .sidebar-link i { width:18px;text-align:center;font-size:0.95rem; }
+        .badge-count { margin-left:auto;background:#ef4444;color:white;font-size:10px;padding:2px 6px;border-radius:10px;font-weight:600; }
+        .sidebar-footer { padding:16px 20px;border-top:1px solid #f0f0f0; }
+        .user-info { display:flex;align-items:center;gap:10px; }
+        .user-avatar { width:36px;height:36px;border-radius:50%;background:#4f46e5;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0; }
+        .user-details p { margin:0; }
+        .user-details .name { font-size:0.85rem;font-weight:600;color:#1a1a2e; }
+        .user-details .role { font-size:0.75rem;color:#adb5bd; }
+        .main-content { margin-left:240px;min-height:100vh; }
+        .topbar { background:#fff;border-bottom:1px solid #e8ecf0;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99; }
+        .topbar-title h5 { margin:0;font-weight:700;color:#1a1a2e;font-size:1.1rem; }
+        .topbar-title p { margin:0;font-size:0.78rem;color:#adb5bd; }
+        .topbar-actions { display:flex;align-items:center;gap:12px; }
+        .btn-icon { width:36px;height:36px;border-radius:50%;border:1px solid #e8ecf0;background:white;display:flex;align-items:center;justify-content:center;color:#6b7280;text-decoration:none;font-size:0.9rem;transition:all 0.2s; }
+        .btn-icon:hover { background:#f0efff;color:#4f46e5;border-color:#c7d2fe; }
+        .page-body { padding:24px 28px; }
+
+        .form-card { background:white;border-radius:16px;border:1px solid #f0f0f0;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden; }
+        .form-card-header { padding:20px 24px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px; }
+        .form-card-header .hicon { width:42px;height:42px;border-radius:10px;background:#ffedd5;color:#ea580c;display:flex;align-items:center;justify-content:center;font-size:1rem; }
+        .form-card-header h6 { margin:0;font-weight:700;color:#1a1a2e; }
+        .form-card-header p { margin:0;font-size:0.78rem;color:#9ca3af; }
+        .form-body { padding:28px 24px; }
+
+        .form-label-pms { font-size:0.83rem;font-weight:600;color:#374151;margin-bottom:6px;display:block; }
+        .form-control-pms { width:100%;border:1px solid #e8ecf0;border-radius:10px;padding:10px 14px;font-size:0.88rem;color:#374151;outline:none;transition:border 0.2s,box-shadow 0.2s;background:#fafafa; }
+        .form-control-pms:focus { border-color:#c7d2fe;background:white;box-shadow:0 0 0 3px rgba(79,70,229,0.08); }
+        .form-select-pms { width:100%;border:1px solid #e8ecf0;border-radius:10px;padding:10px 14px;font-size:0.88rem;color:#374151;outline:none;transition:border 0.2s;background:#fafafa;appearance:none;cursor:pointer; }
+        .form-select-pms:focus { border-color:#c7d2fe;background:white;box-shadow:0 0 0 3px rgba(79,70,229,0.08); }
+
+        /* drag-drop zone */
+        .drop-zone {
+            border: 2px dashed #c7d2fe;
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.22s;
+            background: #fafbff;
+            position: relative;
+        }
+        .drop-zone:hover,.drop-zone.dragover { border-color:#4f46e5;background:#f0efff; }
+        .drop-zone i { font-size:2rem;color:#c7d2fe;margin-bottom:10px;display:block;transition:color 0.2s; }
+        .drop-zone:hover i,.drop-zone.dragover i { color:#4f46e5; }
+        .drop-zone p { margin:0;font-size:0.85rem;color:#6b7280; }
+        .drop-zone .browse-link { color:#4f46e5;font-weight:600;cursor:pointer; }
+        .drop-zone input[type="file"] { position:absolute;inset:0;opacity:0;cursor:pointer; }
+        .file-selected-name { margin-top:10px;font-size:0.8rem;color:#4f46e5;font-weight:600;display:none; }
+
+        .btn-submit { background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;border:none;border-radius:10px;padding:12px 28px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px; }
+        .btn-submit:hover { transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,70,229,0.35); }
+        .btn-cancel { background:#f3f4f6;color:#6b7280;border:none;border-radius:10px;padding:12px 24px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px; }
+        .btn-cancel:hover { background:#e5e7eb;color:#374151; }
+
+        .tip-box { background:#f0efff;border-radius:10px;padding:14px 16px;border:1px solid #c7d2fe; }
+        .tip-box p { margin:0;font-size:0.8rem;color:#4f46e5; }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4>PMS <span>●</span></h4>
+        <small style="color:#adb5bd;font-size:0.75rem;">Project Management System</small>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-label">Main Menu</div>
+        <a href="{% url 'dashboard' %}" class="sidebar-link"><i class="fas fa-th-large"></i> Dashboard</a>
+        <a href="{% url 'project_list' %}" class="sidebar-link"><i class="fas fa-folder-open"></i> Projects</a>
+        <a href="{% url 'task_list' %}" class="sidebar-link"><i class="fas fa-check-square"></i> Tasks</a>
+        <a href="{% url 'team_list' %}" class="sidebar-link"><i class="fas fa-users"></i> Teams</a>
+        <a href="{% url 'chat_list' %}" class="sidebar-link"><i class="fas fa-comments"></i> Chat</a>
+        <div class="menu-label" style="margin-top:8px;">Management</div>
+        <a href="{% url 'file_list' %}" class="sidebar-link active"><i class="fas fa-file-alt"></i> Files</a>
+        <a href="{% url 'reports' %}" class="sidebar-link"><i class="fas fa-chart-bar"></i> Reports</a>
+        <a href="{% url 'notification_list' %}" class="sidebar-link">
+            <i class="fas fa-bell"></i> Notifications
+            {% if unread_notifications > 0 %}<span class="badge-count">{{ unread_notifications }}</span>{% endif %}
+        </a>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ user.username|first|upper }}</div>
+            <div class="user-details">
+                <p class="name">{{ user.username }}</p>
+                <p class="role">{{ user.role|title }}</p>
+            </div>
+            <a href="{% url 'logout' %}" style="margin-left:auto;color:#adb5bd;" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">
+            <h5><a href="{% url 'file_list' %}" style="color:#adb5bd;text-decoration:none;font-weight:400;font-size:0.85rem;">
+                <i class="fas fa-arrow-left me-1"></i>Files</a>
+                <span style="color:#d1d5db;margin:0 8px;">/</span>Upload
+            </h5>
+            <p>Upload a new file to a project</p>
+        </div>
+        <div class="topbar-actions">
+            <a href="{% url 'notification_list' %}" class="btn-icon"><i class="fas fa-bell"></i></a>
+            <a href="{% url 'profile' %}" class="btn-icon"><i class="fas fa-user"></i></a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3">
+                    {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-xl-6">
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <div class="hicon"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <div>
+                            <h6>Upload File</h6>
+                            <p>Add a document, image, PDF or ZIP to a project</p>
+                        </div>
+                    </div>
+                    <div class="form-body">
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="row g-4">
+
+                                <div class="col-12">
+                                    <label class="form-label-pms">File Title <span style="color:#ef4444;">*</span></label>
+                                    <input type="text" name="title" class="form-control-pms" required placeholder="e.g. Project Requirements v2">
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label-pms">Project <span style="color:#ef4444;">*</span></label>
+                                    <div style="position:relative;">
+                                        <select name="project" class="form-select-pms" required>
+                                            <option value="">— Select Project —</option>
+                                            {% for project in projects %}
+                                                <option value="{{ project.id }}">{{ project.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <i class="fas fa-chevron-down" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;font-size:0.75rem;"></i>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label-pms">File Type</label>
+                                    <div style="position:relative;">
+                                        <select name="file_type" class="form-select-pms">
+                                            <option value="pdf">📄 PDF</option>
+                                            <option value="document">📝 Document</option>
+                                            <option value="image">🖼️ Image</option>
+                                            <option value="zip">🗜️ ZIP Archive</option>
+                                            <option value="other">📎 Other</option>
+                                        </select>
+                                        <i class="fas fa-chevron-down" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#9ca3af;pointer-events:none;font-size:0.75rem;"></i>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label-pms">Select File <span style="color:#ef4444;">*</span></label>
+                                    <div class="drop-zone" id="dropZone">
+                                        <input type="file" name="file" id="fileInput" required onchange="showFileName(this)">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p style="font-weight:600;color:#374151;margin-bottom:4px;">Drag & drop your file here</p>
+                                        <p>or <span class="browse-link">browse to upload</span></p>
+                                        <p style="margin-top:8px;font-size:0.75rem;color:#adb5bd;">Max size: 16 MB</p>
+                                        <div class="file-selected-name" id="fileSelectedName">
+                                            <i class="fas fa-check-circle me-1"></i><span id="fileNameText"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="tip-box">
+                                        <p><i class="fas fa-info-circle me-2"></i>
+                                        Supported formats: PDF, DOC, DOCX, PNG, JPG, ZIP. Max 16 MB per file.</p>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 d-flex gap-3 justify-content-end pt-2">
+                                    <a href="{% url 'file_list' %}" class="btn-cancel">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn-submit">
+                                        <i class="fas fa-cloud-upload-alt"></i> Upload File
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showFileName(input) {
+    if (input.files && input.files[0]) {
+        document.getElementById('fileNameText').textContent = input.files[0].name;
+        document.getElementById('fileSelectedName').style.display = 'block';
+    }
+}
+
+// Drag & drop visual feedback
+const dropZone = document.getElementById('dropZone');
+['dragenter','dragover'].forEach(evt => {
+    dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+});
+['dragleave','drop'].forEach(evt => {
+    dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+});
+dropZone.addEventListener('drop', e => {
+    const files = e.dataTransfer.files;
+    if (files.length) {
+        document.getElementById('fileInput').files = files;
+        showFileName(document.getElementById('fileInput'));
+    }
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

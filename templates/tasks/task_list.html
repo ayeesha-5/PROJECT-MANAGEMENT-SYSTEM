@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks - PMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        *{box-sizing:border-box}
+        body{background:#f4f6fb;font-family:'Segoe UI',sans-serif;margin:0}
+        .sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:#fff;border-right:1px solid #e8ecf0;display:flex;flex-direction:column;z-index:100;box-shadow:2px 0 8px rgba(0,0,0,.04)}
+        .sidebar-brand{padding:24px 20px 16px;border-bottom:1px solid #f0f0f0}
+        .sidebar-brand h4{margin:0;font-weight:700;font-size:1.2rem;color:#1a1a2e}
+        .sidebar-brand span{color:#4f46e5}
+        .sidebar-menu{padding:16px 0;flex:1;overflow-y:auto}
+        .menu-label{font-size:10px;font-weight:700;color:#adb5bd;text-transform:uppercase;letter-spacing:1px;padding:8px 20px 4px}
+        .sidebar-link{display:flex;align-items:center;gap:12px;padding:10px 20px;color:#6b7280;text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s;position:relative}
+        .sidebar-link:hover,.sidebar-link.active{background:#f0efff;color:#4f46e5}
+        .sidebar-link.active::before{content:'';position:absolute;left:0;top:0;width:3px;height:100%;background:#4f46e5;border-radius:0 3px 3px 0}
+        .sidebar-link i{width:18px;text-align:center}
+        .sidebar-footer{padding:16px 20px;border-top:1px solid #f0f0f0}
+        .user-info{display:flex;align-items:center;gap:10px}
+        .user-avatar{width:36px;height:36px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+        .user-details p{margin:0}
+        .user-details .name{font-size:.85rem;font-weight:600;color:#1a1a2e}
+        .user-details .role{font-size:.75rem;color:#adb5bd}
+        .main-content{margin-left:240px;min-height:100vh}
+        .topbar{background:#fff;border-bottom:1px solid #e8ecf0;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99}
+        .topbar h5{margin:0;font-weight:700;color:#1a1a2e}
+        .topbar p{margin:0;font-size:.78rem;color:#adb5bd}
+        .page-body{padding:24px 28px}
+        .btn-primary-custom{background:#4f46e5;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:.85rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+        .btn-primary-custom:hover{background:#4338ca;color:#fff}
+        .pms-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+        .badge-completed{background:#dcfce7;color:#16a34a}
+        .badge-inprogress{background:#dbeafe;color:#2563eb}
+        .badge-pending{background:#fef9c3;color:#ca8a04}
+        .badge-onhold{background:#f3f4f6;color:#6b7280}
+        .badge-testing{background:#e0f2fe;color:#0284c7}
+        .badge-high{background:#fee2e2;color:#dc2626}
+        .badge-medium{background:#ffedd5;color:#ea580c}
+        .badge-low{background:#dcfce7;color:#16a34a}
+        .section-card{background:#fff;border-radius:14px;border:1px solid #f0f0f0;box-shadow:0 2px 8px rgba(0,0,0,.04);overflow:hidden}
+        .section-header{padding:18px 20px 14px;border-bottom:1px solid #f8f9fa;display:flex;align-items:center;justify-content:space-between}
+        .section-header h6{margin:0;font-weight:700;color:#1a1a2e;font-size:.95rem}
+        .pms-table{width:100%;border-collapse:collapse}
+        .pms-table th{font-size:.75rem;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;padding:10px 20px;background:#fafafa;border-bottom:1px solid #f0f0f0}
+        .pms-table td{padding:12px 20px;font-size:.85rem;color:#374151;border-bottom:1px solid #f9fafb;vertical-align:middle}
+        .pms-table tr:last-child td{border-bottom:none}
+        .pms-table tr:hover td{background:#fafafa}
+        .action-btn{padding:5px 12px;border-radius:6px;font-size:.78rem;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+        .btn-view{background:#ede9fe;color:#7c3aed}
+        .btn-view:hover{background:#ddd6fe;color:#7c3aed}
+        .btn-edit{background:#fef9c3;color:#ca8a04}
+        .btn-edit:hover{background:#fef08a;color:#ca8a04}
+        .btn-del{background:#fee2e2;color:#dc2626}
+        .btn-del:hover{background:#fecaca;color:#dc2626}
+        .btn-status{background:#e0f2fe;color:#0284c7}
+        .btn-status:hover{background:#bae6fd;color:#0284c7}
+        .filter-bar{background:#fff;border-radius:12px;border:1px solid #f0f0f0;padding:14px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+        .filter-bar select,.filter-bar input{border:1px solid #e8ecf0;border-radius:8px;padding:7px 12px;font-size:.83rem;color:#374151;outline:none}
+        .filter-bar select:focus,.filter-bar input:focus{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+        .empty-state{text-align:center;padding:80px 20px}
+        .empty-state i{font-size:3.5rem;color:#d1d5db;display:block;margin-bottom:16px}
+        .empty-state h5{color:#6b7280;font-weight:600}
+        .task-name-cell{font-weight:600;color:#1a1a2e}
+        .task-name-cell small{display:block;color:#9ca3af;font-size:.75rem;font-weight:400}
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4>PMS <span>●</span></h4>
+        <small style="color:#adb5bd;font-size:.75rem;">Project Management System</small>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-label">Main Menu</div>
+        <a href="{% url 'dashboard' %}" class="sidebar-link"><i class="fas fa-th-large"></i> Dashboard</a>
+        <a href="{% url 'project_list' %}" class="sidebar-link"><i class="fas fa-folder-open"></i> Projects</a>
+        <a href="{% url 'task_list' %}" class="sidebar-link active"><i class="fas fa-check-square"></i> Tasks</a>
+        <a href="{% url 'team_list' %}" class="sidebar-link"><i class="fas fa-users"></i> Teams</a>
+        <a href="{% url 'chat_list' %}" class="sidebar-link"><i class="fas fa-comments"></i> Chat</a>
+        <div class="menu-label" style="margin-top:8px;">Management</div>
+        <a href="{% url 'file_list' %}" class="sidebar-link"><i class="fas fa-file-alt"></i> Files</a>
+        <a href="{% url 'reports' %}" class="sidebar-link"><i class="fas fa-chart-bar"></i> Reports</a>
+        <a href="{% url 'notification_list' %}" class="sidebar-link"><i class="fas fa-bell"></i> Notifications</a>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ user.username|first|upper }}</div>
+            <div class="user-details">
+                <p class="name">{{ user.username }}</p>
+                <p class="role">{{ user.role|title }}</p>
+            </div>
+            <a href="{% url 'logout' %}" style="margin-left:auto;color:#adb5bd;" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div>
+            <h5><i class="fas fa-check-square me-2" style="color:#4f46e5"></i>Tasks</h5>
+            <p>Manage and track all tasks</p>
+        </div>
+        {% if request.user.role == 'super_admin' or request.user.role == 'project_manager' %}
+        <a href="{% url 'task_create' %}" class="btn-primary-custom">
+            <i class="fas fa-plus"></i> New Task
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="page-body">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <i class="fas fa-filter" style="color:#9ca3af"></i>
+            <select onchange="filterTable()" id="filterStatus">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="testing">Testing</option>
+                <option value="completed">Completed</option>
+            </select>
+            <select onchange="filterTable()" id="filterPriority">
+                <option value="">All Priority</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search tasks...">
+        </div>
+
+        {% if tasks %}
+        <div class="section-card">
+            <div class="section-header">
+                <h6><i class="fas fa-list me-2" style="color:#4f46e5"></i>All Tasks</h6>
+                <span style="font-size:.78rem;color:#9ca3af;">{{ tasks|length }} task{{ tasks|length|pluralize }}</span>
+            </div>
+            <table class="pms-table" id="taskTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Task</th>
+                        <th>Project</th>
+                        <th>Assigned To</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Deadline</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr data-status="{{ task.status }}" data-priority="{{ task.priority }}" data-name="{{ task.task_name|lower }}">
+                        <td style="color:#9ca3af;font-size:.8rem;">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="task-name-cell">
+                                {{ task.task_name }}
+                                <small>{{ task.description|truncatechars:40 }}</small>
+                            </div>
+                        </td>
+                        <td style="color:#6b7280;">{{ task.project.name }}</td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:28px;height:28px;border-radius:50%;background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;">
+                                    {{ task.assigned_to.username|first|upper|default:"?" }}
+                                </div>
+                                <span style="font-size:.83rem;">{{ task.assigned_to.username|default:"Unassigned" }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="pms-badge {% if task.priority == 'high' %}badge-high{% elif task.priority == 'medium' %}badge-medium{% else %}badge-low{% endif %}">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="pms-badge {% if task.status == 'completed' %}badge-completed{% elif task.status == 'in_progress' %}badge-inprogress{% elif task.status == 'testing' %}badge-testing{% else %}badge-pending{% endif %}">
+                                {{ task.get_status_display }}
+                            </span>
+                        </td>
+                        <td style="color:#6b7280;font-size:.83rem;">
+                            <i class="fas fa-calendar-alt me-1" style="color:#9ca3af"></i>{{ task.deadline }}
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                                <a href="{% url 'task_detail' task.pk %}" class="action-btn btn-view"><i class="fas fa-eye"></i></a>
+                                <a href="{% url 'task_update_status' task.pk %}" class="action-btn btn-status"><i class="fas fa-sync-alt"></i></a>
+                                {% if request.user.role == 'super_admin' or request.user.role == 'project_manager' %}
+                                <a href="{% url 'task_edit' task.pk %}" class="action-btn btn-edit"><i class="fas fa-pen"></i></a>
+                                <a href="{% url 'task_delete' task.pk %}" class="action-btn btn-del"><i class="fas fa-trash"></i></a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-check-square"></i>
+            <h5>No Tasks Yet</h5>
+            <p style="color:#9ca3af;font-size:.85rem;">Create your first task to get started.</p>
+            {% if request.user.role == 'super_admin' or request.user.role == 'project_manager' %}
+            <a href="{% url 'task_create' %}" class="btn-primary-custom mt-3"><i class="fas fa-plus"></i> Create Task</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filterTable() {
+    const status = document.getElementById('filterStatus').value.toLowerCase();
+    const priority = document.getElementById('filterPriority').value.toLowerCase();
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#taskTable tbody tr').forEach(row => {
+        const matchStatus = !status || row.dataset.status === status;
+        const matchPriority = !priority || row.dataset.priority === priority;
+        const matchSearch = !search || row.dataset.name.includes(search);
+        row.style.display = matchStatus && matchPriority && matchSearch ? '' : 'none';
+    });
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

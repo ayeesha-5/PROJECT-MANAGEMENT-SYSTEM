@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - PMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            background: #f4f6fb;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 240px;
+            height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e8ecf0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+        }
+
+        .sidebar-brand {
+            padding: 24px 20px 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .sidebar-brand h4 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #1a1a2e;
+        }
+
+        .sidebar-brand span {
+            color: #4f46e5;
+        }
+
+        .sidebar-menu {
+            padding: 16px 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .menu-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #adb5bd;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 8px 20px 4px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 0;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background: #f0efff;
+            color: #4f46e5;
+        }
+
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0;
+            width: 3px; height: 100%;
+            background: #4f46e5;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .sidebar-link i {
+            width: 18px;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        .sidebar-link .badge-count {
+            margin-left: auto;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: #4f46e5;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .user-details p { margin: 0; }
+        .user-details .name { font-size: 0.85rem; font-weight: 600; color: #1a1a2e; }
+        .user-details .role { font-size: 0.75rem; color: #adb5bd; }
+
+        /* ── Main Content ── */
+        .main-content {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+        /* ── Topbar ── */
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e8ecf0;
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        .topbar-title h5 {
+            margin: 0;
+            font-weight: 700;
+            color: #1a1a2e;
+            font-size: 1.1rem;
+        }
+
+        .topbar-title p {
+            margin: 0;
+            font-size: 0.78rem;
+            color: #adb5bd;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 1px solid #e8ecf0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.9rem;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover { background: #f0efff; color: #4f46e5; border-color: #c7d2fe; }
+
+        .btn-icon .dot {
+            position: absolute;
+            top: 6px; right: 6px;
+            width: 8px; height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        /* ── Page Body ── */
+        .page-body {
+            padding: 24px 28px;
+        }
+
+        /* ── Stat Cards ── */
+        .stat-card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+
+        .stat-icon {
+            width: 52px; height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.purple  { background: #ede9fe; color: #7c3aed; }
+        .stat-icon.blue    { background: #dbeafe; color: #2563eb; }
+        .stat-icon.green   { background: #dcfce7; color: #16a34a; }
+        .stat-icon.orange  { background: #ffedd5; color: #ea580c; }
+        .stat-icon.red     { background: #fee2e2; color: #dc2626; }
+        .stat-icon.teal    { background: #ccfbf1; color: #0d9488; }
+
+        .stat-info { flex: 1; }
+        .stat-info h3 { margin: 0; font-size: 1.6rem; font-weight: 700; color: #1a1a2e; }
+        .stat-info p  { margin: 0; font-size: 0.8rem; color: #6b7280; }
+
+        /* ── Section Cards ── */
+        .section-card {
+            background: white;
+            border-radius: 14px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-header h6 {
+            margin: 0;
+            font-weight: 700;
+            color: #1a1a2e;
+            font-size: 0.95rem;
+        }
+
+        .section-header a {
+            font-size: 0.78rem;
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* ── Quick Nav Cards ── */
+        .nav-card {
+            background: white;
+            border-radius: 14px;
+            padding: 18px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.2s;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            border-color: #c7d2fe;
+        }
+
+        .nav-card-icon {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-card-text h6 { margin: 0; font-size: 0.88rem; font-weight: 700; color: #1a1a2e; }
+        .nav-card-text p  { margin: 0; font-size: 0.75rem; color: #9ca3af; }
+
+        /* ── Table ── */
+        .pms-table { width: 100%; border-collapse: collapse; }
+        .pms-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 20px;
+            background: #fafafa;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .pms-table td {
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            color: #374151;
+            border-bottom: 1px solid #f9fafb;
+            vertical-align: middle;
+        }
+        .pms-table tr:last-child td { border-bottom: none; }
+        .pms-table tr:hover td { background: #fafafa; }
+
+        /* ── Badges ── */
+        .pms-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .badge-completed  { background: #dcfce7; color: #16a34a; }
+        .badge-inprogress { background: #dbeafe; color: #2563eb; }
+        .badge-pending    { background: #fef9c3; color: #ca8a04; }
+        .badge-onhold     { background: #f3f4f6; color: #6b7280; }
+        .badge-testing    { background: #e0f2fe; color: #0284c7; }
+        .badge-high       { background: #fee2e2; color: #dc2626; }
+        .badge-medium     { background: #ffedd5; color: #ea580c; }
+        .badge-low        { background: #dcfce7; color: #16a34a; }
+
+        /* ── Welcome Banner ── */
+        .welcome-banner {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 14px;
+            padding: 24px 28px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .welcome-banner h4 { margin: 0; font-weight: 700; font-size: 1.2rem; }
+        .welcome-banner p  { margin: 4px 0 0; opacity: 0.8; font-size: 0.85rem; }
+
+        .welcome-banner .role-pill {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════════════════════ SIDEBAR ════════════════════════ -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4>PMS <span>●</span></h4>
+        <small style="color:#adb5bd;font-size:0.75rem;">Project Management System</small>
+    </div>
+
+    <div class="sidebar-menu">
+        <div class="menu-label">Main Menu</div>
+        <a href="{% url 'dashboard' %}" class="sidebar-link active">
+            <i class="fas fa-th-large"></i> Dashboard
+        </a>
+        <a href="{% url 'project_list' %}" class="sidebar-link">
+            <i class="fas fa-folder-open"></i> Projects
+        </a>
+        <a href="{% url 'task_list' %}" class="sidebar-link">
+            <i class="fas fa-check-square"></i> Tasks
+        </a>
+        <a href="{% url 'team_list' %}" class="sidebar-link">
+            <i class="fas fa-users"></i> Teams
+        </a>
+        <a href="{% url 'chat_list' %}" class="sidebar-link">
+            <i class="fas fa-comments"></i> Chat
+        </a>
+
+        <div class="menu-label" style="margin-top:8px;">Management</div>
+        <a href="{% url 'file_list' %}" class="sidebar-link">
+            <i class="fas fa-file-alt"></i> Files
+        </a>
+        <a href="{% url 'reports' %}" class="sidebar-link">
+            <i class="fas fa-chart-bar"></i> Reports
+        </a>
+        <a href="{% url 'notification_list' %}" class="sidebar-link">
+            <i class="fas fa-bell"></i> Notifications
+            {% if unread_notifications > 0 %}
+                <span class="badge-count">{{ unread_notifications }}</span>
+            {% endif %}
+        </a>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar">{{ user.username|first|upper }}</div>
+            <div class="user-details">
+                <p class="name">{{ user.username }}</p>
+                <p class="role">{{ user.role|title }}</p>
+            </div>
+            <a href="{% url 'logout' %}" style="margin-left:auto;color:#adb5bd;font-size:0.85rem;" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════ MAIN ════════════════════════ -->
+<div class="main-content">
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-title">
+            <h5>Dashboard</h5>
+            <p>Welcome back, {{ user.username }}!</p>
+        </div>
+        <div class="topbar-actions">
+            <a href="{% url 'notification_list' %}" class="btn-icon">
+                <i class="fas fa-bell"></i>
+                {% if unread_notifications > 0 %}<span class="dot"></span>{% endif %}
+            </a>
+            <a href="{% url 'profile' %}" class="btn-icon">
+                <i class="fas fa-user"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Page Body -->
+    <div class="page-body">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} mb-3">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div>
+                <h4>Good day, {{ user.username }}! 👋</h4>
+                <p>Here's what's happening with your projects today.</p>
+            </div>
+            <div class="role-pill">
+                <i class="fas fa-shield-alt me-1"></i>
+                {{ user.role|title }}
+            </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4 col-lg-2-4">
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fas fa-folder"></i></div>
+                    <div class="stat-info">
+                        <h3>{{ total_projects }}</h3>
+                        <p>Total Projects</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2-4">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-spinner"></i></div>
+                    <div class="stat-info">
+                        <h3>{{ active_projects }}</h3>
+                        <p>Active Projects</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2-4">
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <h3>{{ completed_projects }}</h3>
+                        <p>Completed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2-4">
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="fas fa-tasks"></i></div>
+                    <div class="stat-info">
+                        <h3>{{ total_tasks }}</h3>
+                        <p>Total Tasks</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2-4">
+                <div class="stat-card">
+                    <div class="stat-icon teal"><i class="fas fa-check-double"></i></div>
+                    <div class="stat-info">
+                        <h3>{{ completed_tasks }}</h3>
+                        <p>Tasks Done</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-2-4">
+                <div class="stat-card">
+                    <div class="stat-icon red"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <h3>{{ pending_tasks }}</h3>
+                        <p>Pending Tasks</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts + Recent Projects -->
+        <div class="row g-3 mb-4">
+            <!-- Task Overview Chart -->
+            <div class="col-lg-4">
+                <div class="section-card h-100">
+                    <div class="section-header">
+                        <h6><i class="fas fa-chart-pie me-2" style="color:#4f46e5"></i>Task Overview</h6>
+                    </div>
+                    <div style="padding:20px;">
+                        <canvas id="taskChart" height="220"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Projects -->
+            <div class="col-lg-8">
+                <div class="section-card h-100">
+                    <div class="section-header">
+                        <h6><i class="fas fa-folder-open me-2" style="color:#4f46e5"></i>Recent Projects</h6>
+                        <a href="{% url 'project_list' %}">View All →</a>
+                    </div>
+                    <table class="pms-table">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>End Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in recent_projects %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight:600;color:#1a1a2e;">{{ project.name }}</div>
+                                    <div style="font-size:0.75rem;color:#9ca3af;">by {{ project.created_by.username }}</div>
+                                </td>
+                                <td>
+                                    <span class="pms-badge
+                                        {% if project.priority == 'high' %}badge-high
+                                        {% elif project.priority == 'medium' %}badge-medium
+                                        {% else %}badge-low{% endif %}">
+                                        {{ project.get_priority_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="pms-badge
+                                        {% if project.status == 'completed' %}badge-completed
+                                        {% elif project.status == 'in_progress' %}badge-inprogress
+                                        {% elif project.status == 'on_hold' %}badge-onhold
+                                        {% else %}badge-pending{% endif %}">
+                                        {{ project.get_status_display }}
+                                    </span>
+                                </td>
+                                <td style="color:#6b7280;">{{ project.end_date }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-4">No projects yet</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Tasks + Quick Nav -->
+        <div class="row g-3">
+            <!-- Recent Tasks -->
+            <div class="col-lg-8">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h6><i class="fas fa-check-square me-2" style="color:#4f46e5"></i>Recent Tasks</h6>
+                        <a href="{% url 'task_list' %}">View All →</a>
+                    </div>
+                    <table class="pms-table">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Project</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Deadline</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in recent_tasks %}
+                            <tr>
+                                <td style="font-weight:600;color:#1a1a2e;">{{ task.task_name }}</td>
+                                <td style="color:#6b7280;">{{ task.project.name }}</td>
+                                <td>
+                                    <span class="pms-badge
+                                        {% if task.priority == 'high' %}badge-high
+                                        {% elif task.priority == 'medium' %}badge-medium
+                                        {% else %}badge-low{% endif %}">
+                                        {{ task.get_priority_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="pms-badge
+                                        {% if task.status == 'completed' %}badge-completed
+                                        {% elif task.status == 'in_progress' %}badge-inprogress
+                                        {% elif task.status == 'testing' %}badge-testing
+                                        {% else %}badge-pending{% endif %}">
+                                        {{ task.get_status_display }}
+                                    </span>
+                                </td>
+                                <td style="color:#6b7280;">{{ task.deadline }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">No tasks yet</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quick Navigation -->
+            <div class="col-lg-4">
+                <div class="section-card h-100">
+                    <div class="section-header">
+                        <h6><i class="fas fa-bolt me-2" style="color:#4f46e5"></i>Quick Access</h6>
+                    </div>
+                    <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+                        <a href="{% url 'project_list' %}" class="nav-card">
+                            <div class="nav-card-icon" style="background:#ede9fe;">
+                                <i class="fas fa-folder-open" style="color:#7c3aed;"></i>
+                            </div>
+                            <div class="nav-card-text">
+                                <h6>Projects</h6>
+                                <p>{{ total_projects }} total projects</p>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto" style="color:#d1d5db;font-size:0.75rem;"></i>
+                        </a>
+                        <a href="{% url 'task_list' %}" class="nav-card">
+                            <div class="nav-card-icon" style="background:#dcfce7;">
+                                <i class="fas fa-check-square" style="color:#16a34a;"></i>
+                            </div>
+                            <div class="nav-card-text">
+                                <h6>Tasks</h6>
+                                <p>{{ pending_tasks }} pending</p>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto" style="color:#d1d5db;font-size:0.75rem;"></i>
+                        </a>
+                        <a href="{% url 'team_list' %}" class="nav-card">
+                            <div class="nav-card-icon" style="background:#fef9c3;">
+                                <i class="fas fa-users" style="color:#ca8a04;"></i>
+                            </div>
+                            <div class="nav-card-text">
+                                <h6>Teams</h6>
+                                <p>Manage your team</p>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto" style="color:#d1d5db;font-size:0.75rem;"></i>
+                        </a>
+                        <a href="{% url 'chat_list' %}" class="nav-card">
+                            <div class="nav-card-icon" style="background:#e0f2fe;">
+                                <i class="fas fa-comments" style="color:#0284c7;"></i>
+                            </div>
+                            <div class="nav-card-text">
+                                <h6>Chat</h6>
+                                <p>Team communication</p>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto" style="color:#d1d5db;font-size:0.75rem;"></i>
+                        </a>
+                        <a href="{% url 'file_list' %}" class="nav-card">
+                            <div class="nav-card-icon" style="background:#ffedd5;">
+                                <i class="fas fa-file-alt" style="color:#ea580c;"></i>
+                            </div>
+                            <div class="nav-card-text">
+                                <h6>Files</h6>
+                                <p>Upload & download</p>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto" style="color:#d1d5db;font-size:0.75rem;"></i>
+                        </a>
+                        <a href="{% url 'reports' %}" class="nav-card">
+                            <div class="nav-card-icon" style="background:#ccfbf1;">
+                                <i class="fas fa-chart-bar" style="color:#0d9488;"></i>
+                            </div>
+                            <div class="nav-card-text">
+                                <h6>Reports</h6>
+                                <p>Analytics & insights</p>
+                            </div>
+                            <i class="fas fa-chevron-right ms-auto" style="color:#d1d5db;font-size:0.75rem;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// Task Overview Doughnut Chart
+const ctx = document.getElementById('taskChart').getContext('2d');
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Completed', 'Pending', 'In Progress'],
+        datasets: [{
+            data: [{{ completed_tasks }}, {{ pending_tasks }}, {{ total_tasks|add:"-"|add:completed_tasks|add:"-"|add:pending_tasks }}],
+            backgroundColor: ['#4f46e5', '#fbbf24', '#34d399'],
+            borderWidth: 0,
+            hoverOffset: 6
+        }]
+    },
+    options: {
+        cutout: '72%',
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 16,
+                    font: { size: 11 },
+                    usePointStyle: true,
+                    pointStyleWidth: 8
+                }
+            }
+        }
+    }
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
